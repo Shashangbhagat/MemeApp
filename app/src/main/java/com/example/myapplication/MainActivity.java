@@ -2,8 +2,10 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +15,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Timestamp;
 
 public class MainActivity extends AppCompatActivity {
     public static int RESULT_LOAD_IMAGE =1;
@@ -62,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         topText.setText(topEdit.getText().toString());
         bottomText.setText(bottomEdit.getText().toString());
+        hideme(view);
 
 
     }
@@ -70,4 +80,43 @@ public class MainActivity extends AppCompatActivity {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),0);
     }
+
+    public static Bitmap getScreenShot(View view){
+        view.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
+
+    public void store(Bitmap bm , String fileName){
+        String dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
+        File dir = new File(dirPath);
+        if(!dir.exists()){
+            dir.mkdir();
+        }
+
+        File file = new File(dirPath,fileName);
+        try{
+            FileOutputStream fos = null;
+            fos = new FileOutputStream(file);
+            bm.compress(Bitmap.CompressFormat.PNG,100,fos);
+            fos.flush();
+            fos.close();
+            Toast.makeText(this, "Image Saved", Toast.LENGTH_SHORT).show();
+
+        }catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+    public void saveImage(View view){
+        View content = (View)findViewById(R.id.lay);
+        Bitmap bitmap = getScreenShot(content);
+        String fileName = "meme"+ System.currentTimeMillis()+".png";
+        store(bitmap,fileName);
+    }
+
 }
